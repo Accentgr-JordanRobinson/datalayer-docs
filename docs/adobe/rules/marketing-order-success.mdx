@@ -1,0 +1,171 @@
+import { Tab, Tabs } from 'rspress/theme';
+import { GoogleTagEvent, CustomCode, EventTiles } from '../../../components';
+
+export function Tiles() {
+    const events = [
+        'order_success'
+    ];
+
+    return (<EventTiles events={events} />);
+}
+
+export function Meta() {
+    const data = {
+    extension: 'Core',
+    action_type: 'Custom Code',
+    name: 'send_purchase_event_to_meta',
+    language: 'JavaScript'
+  };
+
+  return (<CustomCode data={data} />)
+}
+
+export function TikTok() {
+    const data = {
+    extension: 'Core',
+    action_type: 'Custom Code',
+    name: 'send_purchase_event_to_tiktok',
+    language: 'JavaScript'
+  };
+
+  return (<CustomCode data={data} />)
+}
+
+export function CommissionFactory() {
+    const data = {
+    extension: 'Core',
+    action_type: 'Custom Code',
+    name: 'send_purchase_event_to_commission_factory',
+    language: 'JavaScript'
+  };
+
+  return (<CustomCode data={data} />)
+}
+
+# marketing_tags::purchase_tracking::order_success
+![last updated](https://img.shields.io/badge/last_updated-24--06--2025-blue) 
+
+![version number](https://img.shields.io/badge/version-1.0.0-green)
+
+This is a description of the rule and includes some handy information and/or notes about the included code. The implementation follows our established naming conventions and integrates seamlessly with the existing data layer structure. Key considerations include proper error handling for edge cases, ensuring backward compatibility with legacy tracking implementations, and maintaining optimal performance across all supported browsers. 
+
+### Events
+    <Tiles />
+
+### Conditions
+
+
+### Actions
+
+<Tabs>
+    <Tab label="Meta Event">
+        <Meta />
+
+        <div className='m-4 p-4 border !border-[var(--rp-c-bg-mute)] rounded-lg'>
+            ```js
+            var items = event.message.cart_items;
+            var orderDetails = event.message.order;
+            var eventID = window._satellite.cookie.get('eventId');
+
+            if (items && fbq) {
+
+                const formatProduct = (productArray = []) => {
+                    return productArray.map((item) => ({
+                        id: item.child_sku,
+                        quantity: item.qty,
+                    }));
+                };
+                    
+                const metaItems = formatProduct(items);
+                    
+                const purchaseDetails = {
+                    contents: metaItems,
+                    num_items: metaItems.length,
+                    value: orderDetails.total,
+                    currency: event.fullState.default.site.currency,
+                    content_type: 'product'
+                }
+                
+                fbq('track', 'Purchase', purchaseDetails, { eventID });
+                _satellite.logger.info('✅ Meta Purchase Event', purchaseDetails);
+            }
+            ```
+        </div>
+
+    </Tab>
+
+    <Tab label="TikTok Event">
+        <TikTok />
+
+        <div className='m-4 p-4 border !border-[var(--rp-c-bg-mute)] rounded-lg'>
+            ```js
+            const event_id = window._satellite.cookie.get('eventId') || '(not-set)';
+            const items = event.message.cart_items;
+            const orderDetails = event.message.order;
+
+            const uemHash = event.fullState.default.user.uem_hashed;
+
+            if (items && orderDetails && window.ttq) {
+                const formatProduct = (productArray = []) => {
+                    return productArray.map((item) => ({
+                            content_id: item.child_sku,
+                            content_name: item.name,
+                            quantity: item.qty,
+                            price: item.listed_price,
+                            content_type: 'product',
+                        }));
+                    };
+            
+                ttq.track('CompletePayment', {
+                    contents: formatProduct(items),
+                    value: orderDetails.total,
+                    currency: 'AUD',
+                },{ event_id });
+
+                if (uemHash) {
+                ttq.identify({
+                    sha256_email: uemHash,
+                })
+                }
+            
+            _satellite.logger.info('✅ TikTok Purchase Event');
+            }
+            ```
+        </div>
+    </Tab>
+
+    <Tab label="CommissionFactory Event">
+        <CommissionFactory />
+  
+        <div className='m-4 p-4 border !border-[var(--rp-c-bg-mute)] rounded-lg'>
+            ```js
+            const items = event.message?.cart_items;
+            const order = event.message?.order;
+            const error = order?.error;
+
+            const customerStatus = window._satellite.cookie.get('order_event_id') ? 'return' : 'new';
+
+            if (items && order && !error) {
+                ((a, b, c) => { a[b] = a[b] || function () { (a[b].q = a[b].q || []).push(arguments); }; a[c] = a[b]; })(window, 'CommissionFactory', 'cf');
+
+                items.forEach((item) => {
+                cf('add', 'items', {
+                    sku: item.child_sku,
+                    quantity: item.qty,
+                    price: parseFloat(item.sale_price).toFixed(2),
+                });
+                });
+
+                if(order?.promo) { cf('set', 'coupon', order.promo[0].code ?? order.promo.code) }
+                cf('set', 'order', order.orderId);
+                cf('set', 'amount', parseFloat(order.revenue).toFixed(2));
+                cf('set', 'currency', order.currency); 
+                cf('set', 'customer', customerStatus);
+                cf('track');
+
+                _satellite.logger.info('🏭 Commission Factory: Track Purchase');
+            }
+            ```
+        </div>
+    </Tab>
+</Tabs>

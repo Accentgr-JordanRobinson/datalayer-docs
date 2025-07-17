@@ -1,0 +1,22 @@
+{
+  "name": "adobe_tag_docs",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "rspress build",
+    "dev": "rspress dev",
+    "preview": "rspress preview"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.1.10",
+    "lucide-react": "^0.516.0",
+    "postcss": "^8.5.6",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "rspress": "^1.40.2"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.17",
+    "tailwindcss": "^4.1.10"
+  }
+}

@@ -1,0 +1,365 @@
+import { Tab, Tabs } from 'rspress/theme';
+import { GoogleTagEvent, CustomCode, EventTiles } from '../../../components';
+
+export function Tiles() {
+    const events = [
+        'all_events'
+    ];
+
+    return (<EventTiles events={events} />);
+}
+
+export function GAEvent() {
+    const data = {
+        event_name: "view_item",
+        category: "ecommerce", 
+        label: "",
+        value: "%event.message.cart_items.0.listed_price%",
+        custom: {
+            items: "%GA4.get_products%",
+            currency: "%event.fullState.default.site.currency%"
+        }
+    };
+
+    return (<GoogleTagEvent data={data} />)
+}
+
+export function EventID() {
+    const data = {
+        extension: 'Core',
+        action_type: 'Custom Code',
+        name: 'set_event_id',
+        language: 'JavaScript'
+    };
+
+  return (<CustomCode data={data} />)
+}
+
+export function UserVar() {
+    const data = {
+        extension: 'Core',
+        action_type: 'Custom Code',
+        name: 'set_user_variables',
+        language: 'JavaScript'
+    };
+
+  return (<CustomCode data={data} />)
+}
+
+export function WebSDK() {
+    const data = {
+        extension: 'Core',
+        action_type: 'Custom Code',
+        name: 'send_event_data_to_websdk',
+        language: 'JavaScript'
+    };
+
+  return (<CustomCode data={data} />)
+}
+
+export function Fullstory() {
+    const data = {
+        extension: 'Core',
+        action_type: 'Custom Code',
+        name: 'send_custom_event_to_fullstory',
+        language: 'JavaScript'
+    };
+
+  return (<CustomCode data={data} />)
+}
+
+# common::set_variables::all_events
+
+![last updated](https://img.shields.io/badge/last_updated-24--06--2025-blue) 
+
+![version number](https://img.shields.io/badge/version-1.0.0-green)
+
+This is a description of the rule and includes some handy information and/or notes about the included code. The implementation follows our established naming conventions and integrates seamlessly with the existing data layer structure. Key considerations include proper error handling for edge cases, ensuring backward compatibility with legacy tracking implementations, and maintaining optimal performance across all supported browsers. 
+
+### Events
+    <Tiles />
+
+### Conditions
+
+<Tabs>
+    <Tab label="is_not_flush_event">
+        <div className='m-4 p-4 border !border-[var(--rp-c-bg-mute)] rounded-lg'>
+            ```js
+            const event_name = event.message.event;
+
+            const excluded_events = [
+            '_clean-up',
+            '_flush',
+            'target'
+            ];
+
+            return excluded_events.some(pattern => event_name.includes(pattern));
+            ```
+        </div>
+    </Tab>
+</Tabs>
+
+### Actions
+
+<Tabs>
+    <Tab label="Event ID">
+        <EventID />
+
+        <div className='m-4 p-4 border !border-[var(--rp-c-bg-mute)] rounded-lg'>
+        ```js
+        _satellite.cookie.set('eventId', crypto.randomUUID())
+        ```
+        </div>
+    </Tab>
+
+    <Tab label="User Variables">
+        <UserVar />
+
+        <div className='m-4 p-4 border !border-[var(--rp-c-bg-mute)] rounded-lg'>
+            ```js
+            function setUserVariables(userData) {
+                if (userData && userData.uem_hashed) {
+                    
+                    // break if 'blank' hashed value is present 
+                    if(/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/.test(userData.uem_hashed)){
+                    return
+                    }
+                    
+                    // set hashed email
+                    window._satellite.cookie.set('default.user.uem_hashed', userData.uem_hashed);
+
+                    // set GTAG user properties
+                    if(window.gtag){
+                    window.gtag('set', 'user_data', { "sha256_email_address": userData.uem_hashed})       
+                    }
+                    
+                    // set erp_key
+                    if(userData.division_id!= ""){
+                    window._satellite.cookie.set('default.user.division_id', userData.division_id);
+                    }
+                        
+                    logger('Set User Variables');
+                }
+            }
+
+            var logger = _satellite.logger.info
+
+            // Retrieve the stored hash
+            var storedHash = window._satellite.getVar('ls.default.user.uem_hashed');
+
+            // Get the new hash from the event
+            var newHash = event?.message?.default?.user?.uem_hashed;
+
+            // Validate and process the new hash
+            var userData;
+            if (newHash && newHash !== "" && newHash !== storedHash) {
+                setUserVariables( event.message.default.user ); 
+            } else {
+                userData = undefined;
+            }
+            ```
+        </div>
+    </Tab>
+
+    <Tab label="WebSDK Event">
+        <WebSDK />
+  
+        <div className='m-4 p-4 border !border-[var(--rp-c-bg-mute)] rounded-lg'>
+            ```js
+            ((win) => {
+                const satLogger = win._satellite.logger.info;
+                var event_ID = window._satellite.cookie.get('eventId');       
+                    
+                let serverSidePayLoad, product;
+                const _alloy = win.alloy;
+                const dl = event.message;   
+                const hashedEmail = _satellite.getVar('ls.default.user.uem_hashed') || event?.message?.default?.user?.uem_hashed;
+                /* acfId URL parameter fallback from ACC EDMs */
+                const acgId = (event?.message?.default?.user?.division_id != "") ? event?.message?.default?.user?.division_id : (_satellite.getVar('URL_PARAM_ACC_ACGID') != '0' && _satellite.getVar('URL_PARAM_ACC_ACGID')) ? _satellite.getVar('URL_PARAM_ACC_ACGID') : "";
+                
+                if (dl.event && dl.default && dl.default.page) {        
+                
+                // Set product to first in array
+                if (dl.product && dl.product.length > 0) {
+                    product = dl.product[0] // covers xpDL
+                } else if (dl.products && dl.products.length > 0) {
+                    product = dl.products[0] // covers ACDL
+                }
+                
+                var eventData = { 
+                    ...dl, // inherit xpDataLayer
+                    event_id: event_ID,
+                    default: {
+                    ...dl.default, // inherit default
+                    page: {
+                        ...dl.default.page,            
+                    },
+                    user: {
+                        ...dl.default.user, // inherit default.user
+                        ...(hashedEmail != '' && {uem_hashed: hashedEmail}),
+                        ...(acgId != '' && {division_id: acgId}),
+                        ...(window._satellite.getVar('navigator.resolution') && { screen_resolution: window._satellite.getVar('navigator.resolution')}),
+                        ...(window._satellite.getVar('navigator.userAgent') && { user_agent: window._satellite.getVar('navigator.userAgent')}),
+                        ...(_satellite.getVar('vendorIds') && { clientIds: _satellite.getVar('vendorIds')}),
+                        ...(window._satellite.getVar('sessionCount') && { session_count: window._satellite.getVar('sessionCount')}),
+                    }
+                    },
+                    __adobe: {
+                    "target": {
+                        "pageLocation": {
+                        "page": dl.event
+                        },
+                        ...(dl.event == 'product_view' && product && { 
+                        ...(product.parent_category && {"user.categoryId": (product.parent_category || '') + ',' + (product.category || '') + ',' + (product.gender || '')}),
+                        ...(product.child_sku && {"entity.id": product.child_sku.toLowerCase()})
+                        })
+                    }
+                    }
+                }  
+                
+                var xdmData = {
+                    "web":{
+                    "webPageDetails":{              
+                        "viewName":dl.event
+                    }
+                    }
+                }
+                
+                serverSidePayLoad = {
+                // "renderDecisions": true,
+                    "type": dl.event,
+                    "data": eventData,
+                    "xdm": xdmData
+                };      
+                }
+                
+                if (serverSidePayLoad) {
+                    _alloy("sendEvent", serverSidePayLoad).catch(function(error) {
+                        satLogger('aep:sendEvt:Error' + dl.event, error)
+                    });
+                }
+            })(window)
+            ```
+        </div>
+    </Tab>
+
+    <Tab label="Fullstory Event">
+        <Fullstory />
+  
+        <div className='m-4 p-4 border !border-[var(--rp-c-bg-mute)] rounded-lg'>
+            ```js
+            const formatData = (datalayer) => {
+                const product = datalayer.product?.[0] ?? datalayer.products?.[0];
+                const cart = datalayer.cart;
+                const cart_items = datalayer.cart_items;
+                const user = datalayer.default?.user;
+                const order = datalayer.order;
+
+                return {
+                    event_id: _satellite.cookie.get('eventId'),
+
+                    ...(user?.login_status && {login_status : user.login_status}),
+
+                    /* Product Data */
+                    ...(product && {
+                        product_brand: product.brand,
+                        product_name: product.name,
+                        product_parent_sku: product.parent_sku,
+                        product_child_sku: product.child_sku,
+                        product_size: product.size,
+                        product_is_markdown: product.is_markdown,
+                        product_full_price: Number(product.full_price),
+                        product_listed_price: Number(product.listed_price),
+                        product_category: product.category
+                    }),
+
+                    /* Search Result Data */
+                    ...(datalayer.search_result && {
+                        search_term: datalayer.search_result.term, 
+                        search_type: datalayer.search_result.type, 
+                        search_results: datalayer.search_result.numberOfResults
+                    }),
+
+                    ...(_satellite.getVar('URL_PARAM_REDIRECTEDSEARCHQUERY') && {
+                        search_term: _satellite.getVar('URL_PARAM_REDIRECTEDSEARCHQUERY'), 
+                        search_type: 'redirect'
+                    }),
+
+                    /* Cart Data */
+                    ...(cart && {
+                        cart_total: Number(cart.cart_total),
+                        cart_quantity: Number(cart.cart_quantity)
+                    }),
+
+                    /* Cart_Items Data */
+                    ...(cart_items && {
+                        ...cart_items.reduce((acc, item) => {
+                            (acc.cart_brands ??= []).push(item.brand);
+                            (acc.cart_parent_skus ??= []).push(item.parent_sku);
+                            (acc.cart_child_skus ??= []).push(item.child_sku);
+                            (acc.cart_sizes ??= []).push(item.size);
+                            (acc.cart_full_prices ??= []).push(Number(item.full_price));
+                            (acc.cart_listed_prices ??= []).push(Number(item.listed_price));
+                            (acc.cart_is_markdown ??= []).push(item.is_markdown);
+                            (acc.cart_parent_categories ??= []).push(item.parent_category);
+                            return acc;
+                        }, {})
+                    }),
+
+                    /* Order Data */
+                    ...(order && {
+                        order_id: order.orderId,
+                        order_currency: order.currency,
+                        order_checkout_type: order.checkout_type,
+                        order_payment_type: order.payments.map((item) => item.method),
+                        order_delivery_type: order.delivery.method,
+                        order_delivery_type: order.delivery.method,
+                        order_delivery_cost: Number(order.shipping.base) + Number(order.shipping.gst),
+                        revenue: Number(order.revenue),
+                        tax: Number(order.tax),
+                        total: Number(order.total),
+                        order_coupon: order.promo.map((item) => item.code),
+                        order_discount: order.promo.reduce((accumulator,current) => Number(accumulator) + Number(current.base) + Number(current.gst), 0),
+
+                    ...(order.error && {
+                        order_error_details: order.error.detail,
+                        order_error_reason: order.error.reason,
+                        order_error_source: order.error.source
+                    })
+                    }),
+
+                    /* Error Data */
+                    ...(datalayer.default?.error && {
+                        error_rule: datalayer.default.error.rule,
+                        error_action: datalayer.default.error.action,
+                        error_message: datalayer.default.error.message,
+                        error_status_code: datalayer.default.error.code,
+                    })
+                }
+            }
+
+            if (window.FS) {
+            const name = event.message.order?.error ? 'order_error' : event.message.event;
+            const properties = formatData(event.message);
+
+            _satellite.logger.info('FS Event: ', name, properties);
+            FS('trackEvent', {
+                name,
+                properties
+            });
+
+            const hashedEmail = _satellite.getVar('ls.default.user.uem_hashed') ?? event.message.default?.user?.uem_hashed;
+
+            if(hashedEmail) { 
+                FS('setProperties', {
+                type: "user",
+                    properties: {
+                    uid: hashedEmail 
+                }
+                })
+            }
+            }
+            ```
+        </div>
+    </Tab>
+</Tabs>
