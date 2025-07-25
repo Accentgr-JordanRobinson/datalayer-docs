@@ -10,6 +10,11 @@
     "activeMatch": "/tag-management/"
   },
   {
+    "text": "Event Forwarding",
+    "link": "/event-forwarding/",
+    "activeMatch": "/event-forwarding/"
+  },
+  {
     "text": "Testing",
     "link": "/testing/",
     "activeMatch": "/testing/"

@@ -1,4 +1,4 @@
-# Introduction
+# Adobe Tags
 
 Adobe Tag Manager works by creating **Rules** made up of *Events*, *Conditions* & *Actions*.
 

@@ -14,6 +14,32 @@ const Table = ({
   const [columnFilter, setColumnFilter] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
+  // Helper function to evaluate filter expressions
+  const evaluateFilterExpression = (expression, row) => {
+    try {
+      // Replace column names with actual values from the row
+      let evalExpression = expression;
+      
+      // Find all column references and replace with values
+      Object.keys(row).forEach(key => {
+        const regex = new RegExp(`\\b${key}\\b`, 'g');
+        const value = row[key];
+        
+        // If the value is a string, wrap it in quotes for comparison
+        const quotedValue = typeof value === 'string' ? `"${value}"` : value;
+        evalExpression = evalExpression.replace(regex, quotedValue);
+      });
+      
+      // Evaluate the expression safely
+      // Note: Using Function constructor for expression evaluation
+      // This is generally safe for controlled expressions but should be used carefully
+      return new Function('return ' + evalExpression)();
+    } catch (error) {
+      console.warn('Invalid filter expression:', expression, error);
+      return false;
+    }
+  };
+
   // Filter data based on current filters
   const filteredData = useMemo(() => {
     return data.filter(row => {
@@ -22,8 +48,9 @@ const Table = ({
           String(row[col.key] || '').toLowerCase().includes(searchFilter.toLowerCase())
         );
       
+      // Evaluate custom filter expression
       const matchesColumnFilter = columnFilter === '' || 
-        (filterOptions.length > 0 && row[columnFilter]);
+        evaluateFilterExpression(columnFilter, row);
       
       return matchesSearch && matchesColumnFilter;
     });
@@ -36,7 +63,7 @@ const Table = ({
 
   const hasActiveFilters = searchFilter !== '' || columnFilter !== '';
 
-  return (
+   return (
     <div className="w-full max-w-7xl mx-auto p-6">
       
       {/* Filter Controls */}

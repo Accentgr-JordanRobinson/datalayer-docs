@@ -7,10 +7,7 @@ export default defineConfig({
 	globalStyles: path.join(__dirname, "styles/index.css"),
 	title: "Martech Docs",
 	icon: "https://fav.farm/%E2%98%95",
-	logo: {
-		light: "/logo-dark.png",
-		dark: "/logo-light.png",
-	},
+	logoText: 'Martech Docs',
 	themeConfig: {
 		lastUpdated: true,
 	},
