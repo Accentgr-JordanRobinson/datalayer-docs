@@ -1,7 +1,17 @@
 [
   {
-    "text": "Docs",
-    "link": "/adobe/",
-    "activeMatch": "/adobe/"
+    "text": "Data Layer",
+    "link": "/datalayer/",
+    "activeMatch": "/datalayer/"
+  },
+  {
+    "text": "Tag Manager",
+    "link": "/tag-management/",
+    "activeMatch": "/tag-management/"
+  },
+  {
+    "text": "Testing",
+    "link": "/testing/",
+    "activeMatch": "/testing/"
   }
 ]

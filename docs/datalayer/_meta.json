@@ -1,0 +1,14 @@
+[
+	{
+		"type": "file",
+		"name": "index",
+		"label": "Data Layer Framework"
+	},
+	{
+		"type": "dir",
+		"name": "modules",
+		"label": "Modules",
+		"collapsible": false
+	},
+	"appendix.md"
+]

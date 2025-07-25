@@ -1,0 +1,78 @@
+import { Tab, Tabs } from 'rspress/theme';
+import { Table } from '../../../components';
+
+export function DictTable() {
+     return(<Table 
+          data={[
+            { variable: 'exp_id', description: 'A unique identifier for the experiment' },
+            { variable: 'exp_name', description: 'The name of the experiment' },
+            { variable: 'var_id', description: 'An incremental identifier for the experiment variant' },
+            { variable: 'var_name', description: 'The name of the experiment variant' },
+            { variable: 'type', description: 'The type of experiment being activated' }
+          ]}
+          columns={[
+            { key: 'variable', header: 'Variable', align: 'left' },
+            { key: 'description', header: 'Description', align: 'left' }
+          ]}
+          searchable={false}
+          filterable={false}
+          emptyMessage="No variable definitions available"
+        />)
+}
+
+# Experiment Module
+
+An `activate_experiment` event details the data needed to trigger an Adobe Target experience by pushing data to the datalayer from server side or client side events.
+
+## How to Implement
+
+<Tabs>
+  <Tab label="TypeScript">
+    ```ts title="index.ts"
+    interface Experiment {
+    event: 'activate_experiment';
+    experiment: {
+            exp_id: string;
+            exp_name: string;
+            var_id: string;
+            var_name: string;
+            type: 'A/B Test' | 'Personalisation' | 'Pop-up';
+        }
+    }
+
+    // Example Event
+    const experiment: Experiment = {
+        event: 'activate_experiment',
+        experiment: {
+            exp_id: '706141',
+            exp_name: 'PLAT | AU - Test User Split',
+            var_id: '1',
+            var_name: 'Experience A',
+            type: 'A/B Test'
+        }
+    }
+    if( window.xpDatalayer ) { xpDatalayer.push(experiment) }
+    ```
+  </Tab>
+
+  <Tab label="JavaScript">
+    ```js title="index.js"
+    // Example Event
+    const experiment = {
+        event: 'activate_experiment',
+        experiment: {
+            exp_id: '706141',
+            exp_name: 'PLAT | AU - Test User Split',
+            var_id: '1',
+            var_name: 'Experience A',
+            type: 'A/B Test'
+        }
+    }
+    if( window.xpDatalayer ) { xpDatalayer.push(experiment) }
+    ```
+  </Tab>
+</Tabs>
+
+## Variable Dictionary
+
+<DictTable />

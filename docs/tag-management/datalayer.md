@@ -1,4 +1,4 @@
-# XPDataLayer
+# Accessing Data Layer Variables
 
 ## Introduction
 

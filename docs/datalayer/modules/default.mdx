@@ -1,0 +1,88 @@
+import { Tab, Tabs } from 'rspress/theme';
+import { Table } from '../../../components';
+
+export function DictTable() {
+     return(<Table 
+          data={[
+            { variable: 'event', description: 'Name of the event' },
+            { variable: 'default.site', description: '' },
+            { variable: 'default.site.name', description: 'Name of the website, refer to short codes for all divisions' },
+            { variable: 'default.site.experience', description: 'The website experience being served to the visitor, i.e either desktop, mobile or tablet' },
+            { variable: 'default.site.currency', description: 'The currency of the website' }
+          ]}
+          columns={[
+            { key: 'variable', header: 'Variable', align: 'left' },
+            { key: 'description', header: 'Description', align: 'left' }
+          ]}
+          searchable={false}
+          filterable={false}
+          emptyMessage="No variable definitions available"
+        />)
+}
+
+# Default Module
+
+The `default` module contains all the core information fo the app. This is further broken down into `site`, `page`, `user` & `loyalty` data.
+
+>[!INFO]
+>The default data only needs to be pushed to the data layer if any of the following conditions are met;
+>1. The app has been loaded for the first time (ie. The user opens the website in their browser marking the start of their session).
+>2. The DOM has been rerendered (ie. The application is being rendered as a Static Site & the user navigates to a page triggering a page reload).
+>3. Any information has changed  (ie. If a user navigates from 'Home' page to 'Products' page the `page.type` will be updated from "home" to "product").
+
+## How to Implement
+
+<Tabs>
+  <Tab label="TypeScript">
+    ```ts title="index.ts"
+    interface Default {
+        event: 'page_default';
+        default: {
+            site: {
+                name: string;
+                experience: string;
+                currency: string;
+                division: string;
+                domain: string;
+                env: 'dev' | 'stg' | 'prod';
+                version: string;
+            }
+        }
+    }
+
+    // Example Event
+    const experiment: Experiment = {
+        event: 'activate_experiment',
+        experiment: {
+            exp_id: '706141',
+            exp_name: 'PLAT | AU - Test User Split',
+            var_id: '1',
+            var_name: 'Experience A',
+            type: 'A/B Test'
+        }
+    }
+    if( window.xpDatalayer ) { xpDatalayer.push(experiment) }
+    ```
+  </Tab>
+
+  <Tab label="JavaScript">
+    ```js title="index.js"
+    // Example Event
+    const experiment = {
+        event: 'activate_experiment',
+        experiment: {
+            exp_id: '706141',
+            exp_name: 'PLAT | AU - Test User Split',
+            var_id: '1',
+            var_name: 'Experience A',
+            type: 'A/B Test'
+        }
+    }
+    if( window.xpDatalayer ) { xpDatalayer.push(experiment) }
+    ```
+  </Tab>
+</Tabs>
+
+## Variable Dictionary
+
+<DictTable />
