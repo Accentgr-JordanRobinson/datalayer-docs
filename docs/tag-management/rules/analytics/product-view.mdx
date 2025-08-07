@@ -1,0 +1,100 @@
+# Product View
+![version number](https://img.shields.io/badge/version-1.0.0-green)
+
+This is a description of the rule and includes some handy information and/or notes about the included code. The implementation follows our established naming conventions and integrates seamlessly with the existing data layer structure. Key considerations include proper error handling for edge cases, ensuring backward compatibility with legacy tracking implementations, and maintaining optimal performance across all supported browsers. 
+
+### Name
+<Tile events={[ 'analytics::view_tracking::product_view' ]} />
+
+### Events
+<Tile events={[ 'product_view' ]} />
+
+### Conditions
+
+### Actions
+<Actions>
+    <Tab 
+        data={'send_ga4_page_view'}
+        component={<GooglePage />}
+    />
+
+    <Tab 
+        data={'send_ga4_item_view'}
+        component={
+            <GoogleEvent data={{ 
+                name: "send_ga4_item_view",
+                event_name: "view_item", 
+                category: "ecommerce", 
+                value: "%event.message.cart_items.0.listed_price%", 
+                custom: { 
+                    items: "%GA4.get_products%", 
+                    currency: "%event.fullState.default.site.currency%" 
+                }
+            }} />
+        }
+    />
+
+    <Tab 
+        data={'send_klaviyo_item_view'}
+        component={<Code data={{ name: 'send_klaviyo_item_view', language: 'JavaScript' }} />}
+    >
+        ```js
+        const item = event.message?.product?.[0] ?? event.message?.products?.[0];
+
+            const errorLog = [];
+            const error = (prop) => { errorLog.push(prop); return undefined; };
+
+            const formatProduct = (product = {}) => {
+                const listedPrice = product.listed_price ?? error("listed_price");
+
+                return { 
+                    product_name: product.name ?? error("product_name"),
+                    product_id: product.child_sku ?? error("product_id"),
+                    listed_price: listedPrice,
+                    on_sale: product.is_markdown ?? error("on_sale"),
+                    gender: product.gender ?? error('gender'),
+                    brand: product.brand ?? error("brand"),
+                    parent_category: product.parent_category ?? error("parent_category"),
+                    category: product.category ?? error("category"),
+                    color: product.color ?? error("color"),
+                    quantity: 1,
+                    item_total: listedPrice,
+                    $value: listedPrice,
+                    $extra: {
+                        in_stock: product.sku_available ?? error("in_stock"),
+                        parent_sku: product.parent_sku ?? error("parent_sku"),
+                        full_price: product.full_price ?? error("full_price"),
+                        url: event.message.default.page.url ?? error("url"),
+                        currency: event.fullState.default.site.currency ?? error("currency")
+                    }
+                }
+            }
+
+            const payload = formatProduct(item);
+
+            if (errorLog.length !== 0) {
+                _satellite.track('action_failed', {  
+                    rule: 'analytics::view_tracking::product_view', 
+                    action: 'send_product_view_to_klaviyo', 
+                    message: 'Fields Missing from datalayer', 
+                    status_code: 422,
+                    missing_fields: errorLog 
+                });
+                _satellite.logger.error("📨 Klaviyo: Error ❌\n Missing fields:", errorLog);
+            }
+
+            if (window.klaviyo) { 
+                klaviyo.track("Viewed Product", payload);
+                _satellite.logger.info("📨 Klaviyo: Viewed product Sent ✔️\n", payload);
+            } else {
+                _satellite.track('action_failed', {  
+                    rule: 'analytics::view_tracking::product_view', 
+                    action: 'send_product_view_to_klaviyo', 
+                    message: 'klaviyo not available',
+                    status_code: 424 
+                });
+                _satellite.logger.error("📨 Klaviyo: Error ❌\n window.klaviyo unavailable, check that script loaded correctly");
+            }
+        ```
+    </Tab>
+</Actions>

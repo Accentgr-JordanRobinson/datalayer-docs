@@ -1,0 +1,20 @@
+[
+    {
+		"type": "dir",
+		"name": "analytics",
+		"label": "Analytics",
+		"collapsible": false
+	},
+    {
+		"type": "dir",
+		"name": "common",
+		"label": "Common",
+		"collapsible": false
+	},
+    {
+		"type": "dir",
+		"name": "marketing",
+		"label": "Marketing",
+		"collapsible": false
+	}
+]

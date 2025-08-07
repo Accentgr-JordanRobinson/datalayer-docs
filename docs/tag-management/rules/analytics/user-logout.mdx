@@ -1,0 +1,43 @@
+# User Account Logout
+![version number](https://img.shields.io/badge/version-1.0.0-green)
+
+This is a description of the rule and includes some handy information and/or notes about the included code. The implementation follows our established naming conventions and integrates seamlessly with the existing data layer structure. Key considerations include proper error handling for edge cases, ensuring backward compatibility with legacy tracking implementations, and maintaining optimal performance across all supported browsers. 
+
+### Name
+<Tile events={['analytics::user_tracking::account_logout']} />
+
+### Events
+<Tile events={['account_logout']} />
+
+### Conditions
+
+### Actions
+<Actions>
+    <Tab 
+        data={'remove_user_variables'}
+        component={<Code data={{ name: 'remove_user_variables', language: 'JavaScript' }} />}
+    >
+    ```js
+    if(event.fullState.default?.user?.division_id) {
+        _satellite.cookie.remove('default.user.division_id');
+        _satellite.cookie.remove('default.user.uem_hashed');
+        
+        _satellite.logger.info('🙅‍♂️ Remove User Variables');
+    }
+    ```
+    </Tab>
+
+    <Tab 
+        data={'update_ga4_user_props'}
+        component={<Code data={{ name: 'update_ga4_user_props', language: 'JavaScript' }} />}
+    >
+    ```js
+    if(window.gtag){
+        gtag("config", 'G-26TFT5F1H8', {
+            login_status: "anonymous",
+            user_id:''   
+        });
+    }
+    ```
+    </Tab>
+</Actions>

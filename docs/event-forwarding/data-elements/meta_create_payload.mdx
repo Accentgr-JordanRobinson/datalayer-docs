@@ -1,0 +1,32 @@
+# Meta.create_payload
+
+<Card>
+  <Code data={{ name: 'Meta.create_payload', type_label: 'Data Element Type' }} />
+</Card>
+
+```js 
+const products = getDataElementValue('Sys.get_products');
+
+if (products) {
+  var eventType = getDataElementValue('dl_event_name'); 
+  var cartVal = getDataElementValue('dl_cart_total');
+  var orderVal = getDataElementValue('dl_order_total');
+  
+  const formatProducts = (productArray = []) => {
+    return productArray.map((item) => ({
+        id: item.child_sku,
+        item_price: item.listed_price,
+        quantity: item.qty
+    }));
+  }
+  
+  return {
+    ...(orderVal && {value: orderVal}),
+    ...(cartVal && {value: cartVal}),
+    ...(products && {contents: formatProducts(products)}),
+    num_items: products.length,
+    currency: getDataElementValue('dl_site_currency'),
+    content_type: 'product'
+  };
+}
+```

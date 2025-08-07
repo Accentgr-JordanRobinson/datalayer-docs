@@ -8,12 +8,15 @@
 	"naming.md",
 	"notes.md",
 	{
-		"type": "divider"
-	},
-	{
 		"type": "dir",
 		"name": "rules",
 		"label": "Rules",
+		"collapsed": true
+	},
+		{
+		"type": "dir",
+		"name": "data-elements",
+		"label": "Data Elements",
 		"collapsed": true
 	},
 	{

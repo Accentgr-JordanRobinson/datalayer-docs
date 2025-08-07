@@ -1,0 +1,14 @@
+# Snapchat.get_pixel_id
+
+<Card>
+    <Code data={{ name: 'Snapchat.get_pixel_id', type_label: 'Data Element Type' }} />
+</Card>
+
+```js 
+const environment = arc.event.data?.default?.site?.env || '';
+const isProd = environment.toLowerCase().includes('prod');
+
+return isProd ? 
+    "89709deb-9464-47e8-9283-abdc69e98365" : 
+    "2602c131-e95d-4484-887e-eaf041085d9c";
+```

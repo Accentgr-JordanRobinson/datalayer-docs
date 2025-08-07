@@ -1,0 +1,31 @@
+# Cart Remove
+![version number](https://img.shields.io/badge/version-1.0.0-green)
+
+This is a description of the rule and includes some handy information and/or notes about the included code. The implementation follows our established naming conventions and integrates seamlessly with the existing data layer structure. Key considerations include proper error handling for edge cases, ensuring backward compatibility with legacy tracking implementations, and maintaining optimal performance across all supported browsers. 
+
+### Name
+<Tile events={['analytics::cart_tracking::cart_remove' ]} />
+
+### Events
+<Tile events={['cart_remove']} />
+
+### Conditions
+
+### Actions
+<Actions>
+    <Tab 
+        data={'send_ga4_cart_remove'}
+        component={
+            <GoogleEvent data={{ 
+                name: "send_ga4_cart_remove",
+                event_name: "remove_from_cart", 
+                category: "ecommerce", 
+                value: "%event.message.cart_items.0.listed_price%", 
+                custom: { 
+                    items: "%GA4.get_products%", 
+                    currency: "%event.fullState.default.site.currency%" 
+                }
+            }} />
+        }
+    />
+</Actions>

@@ -1,0 +1,183 @@
+# Amperity.get_payload
+
+<Card>
+  <Code data={{ name: 'Amperity.get_payload', type_label: 'Data Element Type' }} />
+</Card>
+
+```js
+/**
+ * Generates a standardized analytics payload based on event type and current `arc` context.
+ * 
+ * @param {string} eventType - The name of the event (e.g., 'product_view', 'order_success')
+ * @returns {Object} payload - The structured event payload ready for transmission
+ */
+const generatePayload = function(eventType) {
+  const now = new Date().toISOString(); // Fallback timestamp if none provided
+
+  // Safely destructure arc.event structure to avoid undefined errors
+  const arcData = arc?.event || {};
+  const xdm = arcData?.xdm || {};
+  const data = arcData?.data || {};
+  const defaultData = data?.default || {};
+
+  const cart = data.cart || {};
+  const search_result = data.search_result || {};
+  const user = defaultData?.user || {};
+  const site = defaultData?.site || {};
+  const page = defaultData?.page || {};
+  const loyalty = defaultData?.loyalty || {};
+  const order = data?.order || {};
+  const items = data?.cart_items || data?.products || data?.product || [];
+
+  const device = xdm?.environment?.browserDetails || {};
+  let item = {};
+
+  // Derive location from either order or XDM
+  const geo = {
+    state: order?.geo?.state || xdm?.placeContext?.geo?.stateProvince || '',
+    city: order?.geo?.city || '',
+    zipcode: order?.geo?.zipcode || ''
+  };
+
+  /**
+   * Utility: Normalize and parse item data from cart/products
+   * @param {Array} items - raw items array from DL
+   * @returns {Array} parsed item array
+   */
+  const parseCartItems = (items = []) => {
+    return items.map(item => ({
+      brand: item?.brand || '',
+      gender: item?.gender || '',
+      parent_category: item?.parent_category || '',
+      category: item?.category || '',
+      color: item?.color || '',
+      parent_sku: item?.parent_sku || '',
+      child_sku: item?.child_sku || '',
+      sku_by_size: item?.sku_by_size || '',
+      name: item?.name || '',
+      full_price: parseFloat(item?.full_price || 0),
+      listed_price: parseFloat(item?.listed_price || 0),
+      discount: parseFloat(item?.discount || 0),
+      is_markdown: Boolean(item?.is_markdown),
+      qty: parseInt(item?.qty || 0),
+      size: item?.size || ''
+    }));
+  };
+
+  // Base payload (common fields)
+  const payload = {
+    event_timestamp: xdm?.timestamp || now,
+    event_name: eventType,
+
+    // Site & device context
+    site_currency: order?.currency || site?.currency || 'AUD',
+    site_division_country: site?.division || '',
+    site_device_browser: device?.userAgent || 'unknown',
+    site_device_type: site?.experience || 'desktop',
+    site_device_os: device?.userAgentClientHints?.platform || '',
+
+    // Page context
+    page_type: page?.type || '',
+    page_location: page?.url || xdm?.web?.webPageDetails?.URL || '',
+    page_referrer: xdm?.web?.webReferrer?.URL || '',
+    page_campaign_name: user?.clientIds?.utm_campaign || '',
+    page_campaign_medium: user?.clientIds?.utm_medium || '',
+    page_campaign_source: user?.clientIds?.utm_source || '',
+
+    // User identity
+    user_ga_client_id: user?.clientIds?.ga4_clientId || '',
+    user_ga_session_id: String(user?.clientIds?.ga4_sessionId || ''),
+    user_division_id: user?.division_id || '',
+    user_hashed_email: user?.uem_hashed || '',
+    user_login_status: user?.login_status || 'anonymous',
+    user_fpid: user?.clientIds?.fpid || '',
+    user_ecid: xdm?.identityMap?.ECID?.[0]?.id || '',
+
+    // Geo
+    user_geo_state: geo.state,
+    user_geo_city: geo.city,
+    user_geo_postcode: geo.zipcode,
+
+    // Loyalty
+    loyalty_rId: loyalty?.rId || '',
+    loyalty_tier: loyalty?.tier || {},
+    loyalty_points_current: parseFloat(loyalty?.points?.current || 0.0),
+    loyalty_points_spendToNextTier: parseFloat(loyalty?.points?.spendToNextTier || 0.0),
+    loyalty_points_pointsToNextTier: parseInt(loyalty?.points?.pointsToNextTier || 0),
+    loyalty_rewards: loyalty?.reward || []
+  };
+
+  // Event-specific overrides/extensions
+  switch (eventType) {
+    case 'order_success':
+      Object.assign(payload, {
+        event_value: parseFloat(order?.revenue || 0.0),
+        order_promo: order?.promo || [],
+        order_payments: order?.payments || [],
+        order_delivery_method: order?.delivery?.method || '',
+        order_delivery_cost: parseFloat(order?.shipping?.base || 0),
+        order_total: parseFloat(order?.total || 0),
+        order_tax: parseFloat(order?.tax || 0),
+        order_revenue: parseFloat(order?.revenue || 0),
+        order_id: order?.orderId || '',
+        checkout_type: order?.checkout_type || '',
+        cart_id: data?.cartId || '',
+        cart_items: parseCartItems(items)
+      });
+      break;
+
+    case 'checkout_start':
+    case 'checkout_step2':
+    case 'checkout_step3':
+      Object.assign(payload, {
+        event_value: parseFloat(cart?.cart_total || 0.0),
+        cart_id: cart?.cartId || data?.cartId || '',
+        cart_quantity: parseInt(cart?.cart_quantity || 0),
+        cart_items: parseCartItems(items)
+      });
+      break;
+
+    case 'cart_add':
+      item = parseCartItems(items);
+      Object.assign(payload, {
+        event_value: parseFloat(item[0]?.listed_price || 0.0),
+        product: item
+      });
+      break;
+
+    case 'site_search-result':
+      Object.assign(payload, {
+        list_count: parseInt(search_result?.numberOfResults || 0),
+        search_term: search_result?.term || '',
+        search_type: search_result?.type || '',
+      });
+      break;
+
+    case 'product_listing-view':
+      Object.assign(payload, {
+        list_name: page?.list_name || '',
+        list_count: parseInt(items.length || 0)
+      });
+      break;
+
+    case 'product_view':
+      item = parseCartItems(items);
+      Object.assign(payload, {
+        event_value: parseFloat(item[0]?.listed_price || 0.0),
+        product: item
+      });
+      break;
+
+    default:
+      throw new Error('Unknown event type: ' + eventType);
+  }
+
+  return payload;
+};
+
+// Entry point: determine event type and generate final payload
+const eventType = arc?.event?.data?.event || '';
+const payload = generatePayload(eventType);
+
+return payload;
+```

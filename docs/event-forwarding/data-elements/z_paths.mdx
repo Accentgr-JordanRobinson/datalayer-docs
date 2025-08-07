@@ -1,0 +1,24 @@
+# Element Paths
+
+> [!WARNING]
+> When creating data elements be sure to select the `Path` Type from the `Core` extension.
+> Then for the first dropdown select `Read data from the provided path`, then copy and paste the paths for each of the element names below.
+> This will automatically map to the matching dropdown option, so don't be alarmed if next time you come back to it the UI looks different. This is expected behaviour, as long as the blue information label path matches the one listed below then it's correctly assigned.
+
+<DataPath elements={[
+    { name: 'client_ip', path: 'arc.event.xdm.environment.ipV4'},
+    { name: 'dl_cart_total', path: 'arc.event.data.cart.cart_total'},
+    { name: 'dl_event_id', path: 'arc.event.data.event_id'},
+    { name: 'dl_event_name', path: 'arc.event.data.event'},
+    { name: 'dl_google_click_id', path: 'arc.event.data.default.user.clientIds.gclid'},
+    { name: 'dl_meta_browser_id', path: 'arc.event.data.default.user.clientIds.facebook_fbp'},
+    { name: 'dl_meta_click_id', path: 'arc.event.data.default.user.clientIds.facebook_fbc'},
+    { name: 'dl_order_id', path: 'arc.event.data.order.orderId'},
+    { name: 'dl_order_total', path: 'arc.event.data.order.total'},
+    { name: 'dl_site_currency', path: 'arc.event.data.default.site.currency'},
+    { name: 'dl_user_email_hashed', path: 'arc.event.data.default.user.uem_hashed'},
+    { name: 'enriched_user', path: ' arc.ruleStash.core.customCode.amperity_user'},
+    { name: 'event_timestamp', path: 'arc.event.xdm.timestamp'},
+    { name: 'event_url', path: 'arc.event.xdm.web.webPageDetails.URL'},
+    { name: 'user_agent', path: 'arc.event.xdm.environment.browserDetails.userAgent'},
+]} />

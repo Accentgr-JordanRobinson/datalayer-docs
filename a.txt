@@ -1,0 +1,4 @@
+curl -H "X-AMPERITY-TENANT: accentgr" \
+     -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IiZBSyIsImtpZCI6ImRzayIsInRlbmFudCI6ImFjY2VudGdyIn0.eyJhbXAta2V5LWNvZGUiOiI2MjU0YjU3Ni05Mzk4LTQzM2MtODk1NC00OWI3NzZjNWI4YTUiLCJzdWIiOiJ0YWstZnhyeE00a0JRbWIiLCJhdWQiOiI0YWVjMjcyMDlhYjY0MTE2NWYyMjcyYTdlNzY5MTY1MyIsImlzcyI6Imh0dHBzOi8vYXBwLWF6LXVlMi5hbXBlcml0eS5jb20vIiwiaWF0IjoxNzU0MzY3OTU3fQ.rHGzSwO5smDbvWT80v5l5-CGcQlvX4neCwjAutGEQxg" \
+     -H "Content-Type: application/json" \
+     'https://accentgr.amperity.com/api/indexes/ix-25AxZZiZw/profiles?key=hypedc_aud_eabe6da2754a0c251b162e432c6e42ec81f397d1b89266fa12360642e6849498'

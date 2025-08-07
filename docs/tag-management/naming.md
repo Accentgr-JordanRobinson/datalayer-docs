@@ -1,4 +1,4 @@
-# Naming Convention Standards
+# Rule & Data Naming Conventions
 
 Consistency isn't just about making things look pretty—it's about creating a system that actually works when you're knee-deep in debugging at 11 PM. These naming conventions will save you from the classic "what the hell does this rule do?" moment we've all experienced.
 
@@ -26,6 +26,8 @@ This hierarchical structure means you'll never again wonder which platform a rul
 - `meta_tiktok::capi::all_events`
 - `snapchat::capi::all_events`
 
+---
+
 ### Conditions (Descriptive Boolean Pattern)
 
 Conditions should read like questions you'd ask yourself: "Is this a purchase?" becomes `is_purchase_complete`.
@@ -39,16 +41,22 @@ The `is_` prefix immediately tells you this returns true or false. No guessing g
 - `is_meta_tracked_event`
 - `is_snapchat_tracked_event`
 
+---
+
 ### Actions (Verb-Based Pattern)
 
 Actions do things, so they should start with verbs. Revolutionary concept, I know.
 
 **Format**: `verb_target_purpose`
 
+You'll find that this almost always results in the name starting and ending with a verb and being no more than 4 words, for example;
+
 **Examples**:
-- `send_conversion_to_google_ads`
-- `send_event_to_meta_api`
+- `send_ga4_cart_add`
+- `send_meta_user_login`
 - `hash_client_ip`
+
+---
 
 ### Data Elements
 
@@ -91,6 +99,8 @@ When your data elements need to actually *do* something beyond just sitting ther
 :::info
 `Sys` refers to system methods or shared functionality that multiple platforms can use. Think of it as your utility belt.
 :::
+
+---
 
 ## Quick Reference Table
 

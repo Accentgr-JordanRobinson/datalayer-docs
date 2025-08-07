@@ -1,0 +1,57 @@
+# Tiktok.create_payload
+
+<Card>
+  <Code data={{ name: 'Tiktok.create_payload', type_label: 'Data Element Type' }} />
+</Card>
+
+```js 
+const eName = getDataElementValue('dl_event_name');
+
+let event_map = {
+  "product_view": "ViewContent",
+  "cart_add": "AddToCart",
+  "checkout_start": "InitiateCheckout",
+  "order_success": "CompletePayment"
+};
+
+const event_name = event_map[eName.toLowerCase()];
+
+if(event_name) {
+  const formatProducts = (productArray = []) => {
+    return productArray.map((item) => ({
+        content_id: item.child_sku,
+        content_name: item.name,
+        quantity: item.qty,
+        price: item.listed_price,
+        content_type: 'product',
+    }));
+  }
+    
+  const product_list = getDataElementValue('Sys.get_products');
+  const hashed_email = getDataElementValue('dl_user_email_hashed')
+  
+  return {
+    "pixel_code": "C2QT7S23E7AKK4Q996KG",
+    "test_event_code": "TEST38177",
+    "event": event_name,
+    "event_id": getDataElementValue('dl_event_id'),
+    "timestamp": getDataElementValue('event_timestamp'),
+    "context": {
+      "ad": {},
+      "page": {
+        "url": getDataElementValue('event_url'),
+       },
+       ...(hashed_email && { 
+        "user": { "email": hashed_email}
+       }),
+       "user_agent": getDataElementValue('user_agent'),
+       "ip": getDataElementValue('client_ip')
+    },
+    "properties": {
+      "contents": formatProducts(product_list),
+      "currency": "AUD",
+      "value": getDataElementValue('Sys.get_value')
+    }
+  };
+}
+```

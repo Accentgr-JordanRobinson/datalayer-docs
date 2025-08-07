@@ -1,0 +1,23 @@
+# Amperity.get_stream_id
+
+<Card>
+  <Code data={{ name: 'Amperity.get_stream_id', type_label: 'Data Element Type' }} />
+</Card>
+
+```js 
+const eName = getDataElementValue('dl_event_name')?.toLowerCase();
+
+const eventMap = {
+  'cart_add': 'is-Fzz1QsGQ',
+  'product_listing-view': 'is-BL2tBd2N',
+  'site_search-result': 'is-2fjVfNpKT',
+  'checkout_start': 'is-2ENd2VcXY',
+  'checkout_step2': 'is-ZFJcgZZz',
+  'checkout_step3': 'is-2rS27GDdH',
+  'product_view': 'is-2nGpCzVcF',
+};
+  
+const streamId = eName === 'order_success' && getDataElementValue('dl_order_id') ? 'is-33fnaAdwy' : eventMap[eName];
+
+return streamId;
+```

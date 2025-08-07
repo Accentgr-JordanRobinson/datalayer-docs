@@ -1,0 +1,58 @@
+# Amperity RTT Data Stream
+![version number](https://img.shields.io/badge/version-1.0.0-green)
+
+This is a description of the rule and includes some handy information and/or notes about the included code. 
+
+### Name
+<Tile events={[ 'amperity::data_stream::all_events' ]} />
+
+### Conditions
+<Conditions>
+    <Tab 
+        data={{ name: 'is_amperity_tracked_event', type: 'regular' }}
+        component={ <Code data={{ name: "is_user_enrichment" }} />  }
+    >
+    ```js 
+    const amperityTrackedEvents = [
+        'cart_add',
+        'product_listing-view',
+        'site_search-result',
+        'checkout_start',
+        'checkout_step2',
+        'checkout_step3',
+        'product_view',
+        'order_success'
+    ];
+
+    if (!arc.event.data.event) {
+    return false;
+    }
+
+    return amperityTrackedEvents.includes(arc.event.data.event.toLowerCase());
+    ```
+    </Tab>
+</Conditions>
+
+### Actions
+
+<Actions>
+    <Tab
+        data={'post_amperity_stream_data'}
+        component={
+            <Fetch data={{ 
+                name: 'post_amperity_stream_data', 
+                method: 'POST',
+                url: 'https://accentgr.amperity.com/stream/v0/data/{{Amperity.get_stream_id}}',
+                headers: {
+                    'x-amperity-tenant': 'accentgr',
+                    'content-type': 'application/json',
+                    'Authorization': 'Bearer {{AMPERITY_TOKEN}}'
+                },
+                body: '{{Amperity.create_payload}}'
+            }} />
+        }
+    />
+</Actions>
+
+### Dependencies
+<Tile events={[ 'AMPERITY_TOKEN', 'Amperity.get_stream_id', 'Amperity.create_payload' ]} />

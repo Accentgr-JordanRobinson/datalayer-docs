@@ -1,0 +1,31 @@
+# Sys.get_hashed_ip
+
+<Card>
+  <Code data={{ name: 'Sys.get_hashed_ip', type_label: 'Data Element Type' }} />
+</Card>
+
+```js 
+async function hash_client_ip() {
+  try {
+    const ip = getDataElementValue('client_ip');
+    
+    if (!ip) {
+      console.error('Client IP is missing or invalid');
+      return '';
+    }
+    
+    const msgUint8 = new TextEncoder().encode(ip);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+    
+    return Array.from(new Uint8Array(hashBuffer))
+      .map(byte => byte.toString(16).padStart(2, '0'))
+      .join('');
+      
+  } catch (error) {
+    console.error('Error hashing client IP:', error);
+    return '';
+  }
+}
+
+return hash_client_ip();
+```

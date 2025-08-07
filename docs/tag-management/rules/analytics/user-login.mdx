@@ -1,0 +1,26 @@
+# User Account Login
+![version number](https://img.shields.io/badge/version-1.0.0-green)
+
+This is a description of the rule and includes some handy information and/or notes about the included code. The implementation follows our established naming conventions and integrates seamlessly with the existing data layer structure. Key considerations include proper error handling for edge cases, ensuring backward compatibility with legacy tracking implementations, and maintaining optimal performance across all supported browsers. 
+
+### Name
+<Tile events={['analytics::user_tracking::account_login']} />
+
+### Events
+<Tile events={['account_login-complete']} />
+
+### Conditions
+
+### Actions
+<Actions>
+    <Tab 
+        data={'send_ga4_login'}
+        component={
+            <GoogleEvent data={{ 
+                name: "send_ga4_login",
+                event_name: "login",
+                category: "account"
+            }} />
+        }
+    />
+</Actions>

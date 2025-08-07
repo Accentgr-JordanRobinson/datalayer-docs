@@ -1,0 +1,98 @@
+# Fullstory User Enrichment
+![version number](https://img.shields.io/badge/version-1.0.0-green)
+
+This is a description of the rule and includes some handy information and/or notes about the included code. 
+
+### Name
+<Tile events={[ 'fullstory::amperity_fetch::user_enrichment' ]} />
+
+### Conditions
+<Conditions>
+    <Tab 
+        data={{ name: 'is_user_enrichment', type: 'regular' }}
+        component={
+            <Compare data={{ 
+                name: "is_user_enrichment",
+                op: "Equals",
+                left: "{{dl_event_name}}",
+                right: "user_enrichment"
+            }} />
+        }
+    />
+</Conditions>
+
+### Actions
+
+<Actions>
+    <Tab
+        data={'fetch_amperity_user_attributes'}
+        component={
+            <Fetch data={{ 
+                name: 'fetch_amperity_user_attributes', 
+                method: 'GET',
+                url: 'https://accentgr.amperity.com/api/indexes/{index-id}/profiles/{brand-id}_{{dl_user_email_hashed}}',
+                headers: {
+                    'x-amperity-tenant': 'accentgr',
+                    'Authorization': 'Bearer {{AMPERITY_API_KEY}}',
+                    'api-version': '2025-07-31'
+                },
+                response_key: 'amperity'
+            }} />
+        }
+    />
+
+    <Tab 
+        data={'enrich_user_profile'}
+        component={<EFCode data={{ name: 'enrich_user_profile', key: 'amperity_user' }} />}
+    >
+        ```js
+        const json = arc.ruleStash['adobe-cloud-connector'].responses.amperity;
+
+        const obj = JSON.parse(json);
+        const user = obj?.attributes;
+
+        return {
+            "qff_member": user?.qff_member == 'n' ? false : true,
+            "city": user?.city,
+            "reseller_flag": user?.reseller_flag,
+            "qff_customer_status": user?.qff_customer_status,
+            "lifecycle_stage": user?.lifecycle_stage,
+            "gender": user?.gender,
+            "predicted_product_attribute": user?.predicted_product_attribute,
+            "loyalty_opt_in": user?.loyalty_opt_in,
+            "predicted_customer_lifecycle_status": user?.predicted_customer_lifecycle_status,
+            "division_id": user?.division_id,
+            "preferred_store_name": user?.preferred_store_name,
+            "reward_balance": user?.reward_balance,
+            "known_customer": user?.known_customer,
+            "predicted_customer_lifetime_value_tier": user?.predicted_customer_lifetime_value_tier,
+            "lifecycle_status": user?.lifecycle_status,
+            ...( user?.email_opt_in && { "email_opt_in": user?.email_opt_in }),
+            ...( user?.sms_opt_in && { "sms_opt_in": user?.sms_opt_in })
+        };
+        ```
+    </Tab>
+
+    <Tab
+        data={'send_enrichment_to_fullstory'}
+        component={
+            <Fetch data={{ 
+                name: 'send_enrichment_to_fullstory', 
+                method: 'POST',
+                url: 'https://api.fullstory.com/v2/users',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': 'Basic {{FS_API_TOKEN}}'
+                },
+                body: {
+                    uid: '{{dl_user_email_hashed}}',
+                    properties: '{{enriched_user}}'
+                }
+            }} />
+        }
+    />
+</Actions>
+
+### Dependencies
+<Tile events={[ 'AMPERITY_API_KEY', 'FS_API_TOKEN', 'dl_user_email_hashed', 'dl_event_name', 'enriched_user' ]} />

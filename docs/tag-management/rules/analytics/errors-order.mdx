@@ -1,0 +1,69 @@
+# Order Errors
+![version number](https://img.shields.io/badge/version-1.0.0-green)
+
+This is a description of the rule and includes some handy information and/or notes about the included code. The implementation follows our established naming conventions and integrates seamlessly with the existing data layer structure. Key considerations include proper error handling for edge cases, ensuring backward compatibility with legacy tracking implementations, and maintaining optimal performance across all supported browsers. 
+
+### Name
+<Tile events={['analytics::error_tracking::order_success']} />
+
+### Events
+<Tile events={['order_success']} />
+
+### Conditions
+<Conditions>
+    <Tab data={{ name: 'is_order_error', type: 'regular' }}>
+        ```js
+        return event?.message?.order?.error !== undefined;
+        ```
+    </Tab>
+</Conditions>
+
+### Actions
+<Actions>
+    <Tab 
+        data={'send_ga4_error'}
+        component={
+            <GoogleEvent data={{ 
+                name: "send_ga4_error",
+                event_name: "errors", 
+                custom: { 
+                    error_type: "%event.message.default.error.code%", 
+                    error_detail: "%event.message.default.error.location%" 
+                }
+            }} />
+        }
+    />
+
+    <Tab 
+        data={'send_klaviyo_order_error'}
+        component={<Code data={{ name: 'send_klaviyo_order_error', language: 'JavaScript' }} />}
+    >
+        ```js
+        const dl = event.message;
+        const items = dl.cart_items ?? [];
+
+        const payload = {
+                $value: Number(dl.order.total),
+                $currency: dl.default.site.currency,
+                quantity: items.reduce((x, item) => x + item.qty, 0),
+                ...(dl.order.revenue && { total_net: Number(dl.order.revenue) }),
+                ...(dl.order.shipping && { shipping: Number(dl.order.shipping) }),
+                ...(dl.order.tax && {tax: Number(dl.order.tax)}),
+                ...(dl.order.payment.type && {paymentType: dl.order.payment.type }),
+                ...(dl.order.orderId && {id: dl.order.orderId}),
+                order_channel: 'Online',
+                error_type: dl.order.error.source,
+                ...(dl.order.promo.code && { discount_code: dl.order.promo.code }),
+                ...(dl.order.promo.base && { discount: dl.order.promo.base }),
+                item_names: items.map(item => item.name),
+                item_categories: items.map(item => item.parent_category),
+                item_brands: items.map(item => item.brand),
+                items: items
+            }
+
+        if(window.klaviyo) { klaviyo.track("Order Error", payload) }
+        
+        _satellite.logger.info("Klaviyo: Order Error - ", payload);
+        ```
+    </Tab>
+</Actions>

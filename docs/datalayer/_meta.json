@@ -10,5 +10,6 @@
 		"label": "Modules",
 		"collapsible": false
 	},
-	"appendix.md"
+	"appendix.md",
+	"event-builder.mdx"
 ]

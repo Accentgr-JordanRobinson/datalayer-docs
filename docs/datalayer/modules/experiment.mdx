@@ -1,24 +1,4 @@
 import { Tab, Tabs } from 'rspress/theme';
-import { Table } from '../../../components';
-
-export function DictTable() {
-     return(<Table 
-          data={[
-            { variable: 'exp_id', description: 'A unique identifier for the experiment' },
-            { variable: 'exp_name', description: 'The name of the experiment' },
-            { variable: 'var_id', description: 'An incremental identifier for the experiment variant' },
-            { variable: 'var_name', description: 'The name of the experiment variant' },
-            { variable: 'type', description: 'The type of experiment being activated' }
-          ]}
-          columns={[
-            { key: 'variable', header: 'Variable', align: 'left' },
-            { key: 'description', header: 'Description', align: 'left' }
-          ]}
-          searchable={false}
-          filterable={false}
-          emptyMessage="No variable definitions available"
-        />)
-}
 
 # Experiment Module
 
@@ -75,4 +55,19 @@ An `activate_experiment` event details the data needed to trigger an Adobe Targe
 
 ## Variable Dictionary
 
-<DictTable />
+<Table 
+  data={[
+    { variable: 'exp_id', description: 'A unique identifier for the experiment' },
+    { variable: 'exp_name', description: 'The name of the experiment' },
+    { variable: 'var_id', description: 'An incremental identifier for the experiment variant' },
+    { variable: 'var_name', description: 'The name of the experiment variant' },
+    { variable: 'type', description: 'The type of experiment being activated' }
+  ]}
+  columns={[
+    { key: 'variable', header: 'Variable', align: 'left' },
+    { key: 'description', header: 'Description', align: 'left' }
+  ]}
+  searchable={false}
+  filterable={false}
+  emptyMessage="No variable definitions available"
+/>

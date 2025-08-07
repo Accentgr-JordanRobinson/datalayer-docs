@@ -1,0 +1,22 @@
+# Meta.get_event_name
+
+<Card>
+  <Code data={{ name: 'Meta.get_event_name', type_label: 'Data Element Type' }} />
+</Card>
+
+```js 
+const event_name = getDataElementValue('dl_event_name');
+
+const event_map = {
+  "default_view": "PageView",
+  "page_default": "PageView",
+  "home_view": "PageView",
+  "product_listing-view": "PageView", 
+  "product_view": "ViewContent",
+  "cart_add": "AddToCart",
+  "checkout_start": "InitiateCheckout",
+  "order_success": "Purchase"
+};
+
+return event_map[event_name];
+```

@@ -1,0 +1,14 @@
+# Sys.get_products
+
+<Card>
+    <Code data={{ name: 'Sys.get_products', type_label: 'Data Element Type' }} />
+</Card>
+
+```js 
+const products = arc.event.data.product ??
+                arc.event.data.products ??
+                arc.event.data.cart_items ??
+                arc.event.data.cart_item_removed;
+
+return products;
+```

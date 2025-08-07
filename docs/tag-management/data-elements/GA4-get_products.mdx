@@ -1,0 +1,45 @@
+# GA4.get_products
+
+```js
+const dl = event.message;
+const prodData = dl.product ??
+                 dl.products ??
+                 dl.cart_items ??
+                 dl.cart_item_removed ?? [];
+
+function formatProduct(product) {
+  if (!product) return {};
+  
+  return {
+    ...(product.name && { item_name: product.name }),
+    ...(product.child_sku && { item_id: product.child_sku }),
+    ...(product.parent_sku && { item_sku: product.parent_sku }),
+    ...(product.brand && { item_brand: product.brand }),
+    ...(product.parent_category && { item_category: product.parent_category }),
+    ...(product.gender && { item_category2: product.gender }),
+    ...(product.sport && { item_category3: product.sport }),
+    ...(product.specialty && { item_category4: product.specialty }),
+    ...(product.model && { item_category5: product.model }),
+    ...((product.size || product.color) && { 
+            item_variant: [
+                product.size, 
+                product.color
+            ].filter(Boolean).join(' ') 
+        }),
+    ...(product.listed_price && { price: Number(product.listed_price) }),
+    ...(product.full_price && product.listed_price && { 
+        discount: Number(product.full_price - product.listed_price).toFixed(2) 
+    }),
+    ...(product.qty && { quantity: parseFloat(product.qty) }),
+    ...(product.position && { index: product.position }),
+  };
+}
+
+
+if (Array.isArray(prodData)) {
+    const limitedProdArr = prodData.slice(0, 20);
+    return limitedProdArr.map(product => formatProduct(product));
+} else {
+    return [formatProduct(prodData)];
+}
+```

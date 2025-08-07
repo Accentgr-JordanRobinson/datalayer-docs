@@ -1,0 +1,77 @@
+# Snapchat.create_payload
+
+<Card>
+  <Code data={{ name: 'Snapchat.create_payload', type_label: 'Data Element Type' }} />
+</Card>
+
+```js 
+const dl_event_name = getDataElementValue('dl_event_name');
+const event_map = {
+  'home_view': "PAGE_VIEW", 
+  'page_default': "PAGE_VIEW", 
+  'product_view': "VIEW_CONTENT", 
+  'site_search-result': "SEARCH", 
+  'cart_add': "ADD_CART", 
+  'checkout_start': "START_CHECKOUT", 
+  'checkout_step3': "ADD_BILLING", 
+  'order_success': "PURCHASE"
+};
+
+const event_name = event_map[dl_event_name.toLowerCase()];
+
+if (event_name) {
+    const formatProducts = (productArray = []) => {
+        return productArray.map((item) => ({
+            content_id: item.child_sku,
+                content_name: item.name,
+                quantity: item.qty,
+                ...(item.category && {category: item.category}), 
+                price: Number(item.listed_price*(item.qty || 1)),
+                content_type: 'product',
+        }));
+    };
+    
+    const products = getDataElementValue('Sys.get_products');
+    const hashedEmail = getDataElementValue('dl_user_email_hashed'); 
+    
+    let search_string;
+    if (dl_event_name.toLowerCase() === 'site_search-result' && arc.event.data?.search_result?.term) {
+        search_string = arc.event.data.search_result.term;
+    }
+
+    let transaction_id;
+    if (dl_event_name.toLowerCase() === 'order_success' && arc.event.data?.order?.orderId) {
+        transaction_id = arc.event.data.order.orderId;
+    }
+    
+    let item_category, item_ids, number_items, price, currency;
+    const items = products ? formatProducts(products) : undefined;
+
+    if(items != undefined){      
+      item_category = items.filter(e=>{return e.category}).map(e=>{ return e.category; }).join(',');
+      item_ids = items.map(e=>{return e.content_id}).join(',');
+      number_items = items.map(e=>{return e.quantity}).join(',');
+      price = items.map(e=>{return e.price}).join(',');
+      currency = "AUD";
+    }
+    
+    return {
+      "pixel_id": getDataElementValue('Snapchat.get_pixel_id'),
+      "event_conversion_type":"WEB",
+      "event_type": event_name,
+      "event_id": getDataElementValue('dl_event_id'),
+      "user_agent": getDataElementValue('user_agent'),
+      "timestamp": getDataElementValue('event_timestamp'),
+      "page_url":getDataElementValue('event_url'),
+      "hashed_ip_address": getDataElementValue('Sys.get_hashed_ip'),
+      ...(hashedEmail && {"hashed_email": hashedEmail}),
+      ...(search_string && {"search_string": search_string}),
+      ...(item_category && {"item_category": item_category}),
+      ...(item_ids && {"item_ids": item_ids}),
+      ...(number_items && {"number_items": number_items}),
+      ...(price && {"price": price}),
+      ...(currency && {"currency": currency}),
+      ...(transaction_id && {"transaction_id": transaction_id}),
+    }
+}
+```

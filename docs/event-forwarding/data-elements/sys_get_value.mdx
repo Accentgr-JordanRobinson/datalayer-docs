@@ -1,0 +1,19 @@
+# Sys.get_value
+
+<Card>
+    <Code data={{ name: 'Sys.get_value', type_label: 'Data Element Type' }} />
+</Card>
+
+```js 
+const cartItemValue = arc.event.data.cart_items?.[0]?.listed_price !== undefined && 
+                      arc.event.data.cart_items?.[0]?.qty !== undefined ?
+                      arc.event.data.cart_items[0].listed_price * arc.event.data.cart_items[0].qty :
+                      undefined;
+
+const value = arc.event.data.order?.total ??
+              arc.event.data.cart?.cart_total ??
+              cartItemValue ??
+              arc.event.data.products?.[0]?.listed_price;
+
+return value;
+```
